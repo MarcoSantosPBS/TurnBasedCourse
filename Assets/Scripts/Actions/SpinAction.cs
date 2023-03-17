@@ -17,16 +17,14 @@ public class SpinAction : BaseAction
 
         if (spinnedAmount >= 360)
         {
-            isActive = false;
-            onActionCompleted?.Invoke();
+            ActionComplete();
         }
     }
 
     public override void TakeAction(GridPosition gridPosition, Action onActionCompleted)
     {
         spinnedAmount = 0;
-        isActive = true;
-        this.onActionCompleted = onActionCompleted;
+        ActionStart(onActionCompleted);
     }
 
     public override List<GridPosition> GetValidActionGridPositions()

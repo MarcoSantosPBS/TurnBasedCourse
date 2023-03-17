@@ -37,6 +37,7 @@ public class UnitActionSystem : MonoBehaviour
     {
         if (isBusy) { return; }
         if (EventSystem.current.IsPointerOverGameObject()) { return; }
+        if (!TurnSystem.Instance.IsPlayerTurn()) { return; }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -51,7 +52,9 @@ public class UnitActionSystem : MonoBehaviour
         RaycastHit hit = Raycast(ray, unitLayerMask);
         if (hit.transform != null && hit.transform.TryGetComponent<Unit>(out Unit unit))
         {
-            if (unit == selectedUnit) { return false; } 
+            if (unit == selectedUnit) { return false; }
+            if (unit.IsEnemy()) { return false; }
+
             SetSelectedUnit(unit);
             return true;
         }

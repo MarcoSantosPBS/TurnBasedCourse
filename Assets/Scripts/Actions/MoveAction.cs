@@ -9,9 +9,11 @@ public class MoveAction : BaseAction
     [SerializeField] private float rotationSpeed;
     [SerializeField] private int maxMoveDistance;
     [SerializeField] private LayerMask groundLayerMask;
-    [SerializeField] private Animator animator;
-   
+
     private Vector3 targetPosition;
+
+    public event Action OnStartMoving;
+    public event Action OnStopMoving;
 
     protected override void Awake()
     {
@@ -25,24 +27,22 @@ public class MoveAction : BaseAction
 
         if (Vector3.Distance(transform.position, targetPosition) > stoppingDistance)
         {
-            animator.SetBool("IsRunning", true);
             Vector3 direction = (targetPosition - transform.position).normalized;
             transform.position += direction * Time.deltaTime * speed;
             transform.forward += direction * Time.deltaTime * rotationSpeed;
         }
         else
         {
-            isActive = false;
-            animator.SetBool("IsRunning", false);
-            onActionCompleted?.Invoke();
+            ActionComplete();
+            OnStopMoving?.Invoke();
         }
     }
 
     public override void TakeAction(GridPosition targetPosition, Action onActionCompleted)
     {
         this.targetPosition = LevelGrid.Instance.GetWorldPosition(targetPosition);
-        this.onActionCompleted = onActionCompleted;
-        isActive = true;
+        ActionStart(onActionCompleted);
+        OnStartMoving?.Invoke();
     }
 
     public override List<GridPosition> GetValidActionGridPositions()

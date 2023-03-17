@@ -7,6 +7,7 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private MoveAction moveAction;
     [SerializeField] private SpinAction spinAction;
+    [SerializeField] private bool isEnemy;
 
     private const int ACTION_POINTS_MAX = 2;
     private BaseAction[] baseActions;
@@ -36,6 +37,11 @@ public class Unit : MonoBehaviour
         }
     }
 
+    public  void TakeDamage()
+    {
+        Debug.Log(transform + "took damage");
+    }
+
     public bool TrySpendActionPointsToTakeAction(BaseAction action)
     {
         if (CanSpendActionPointsToTakeAction(action))
@@ -60,8 +66,17 @@ public class Unit : MonoBehaviour
 
     private void TurnSystem_OnTurnChanged()
     {
-        actionPoints = ACTION_POINTS_MAX;
-        OnAnyActionPointsChanged?.Invoke();
+        if ((IsEnemy() && !TurnSystem.Instance.IsPlayerTurn()) ||
+            (!IsEnemy() && TurnSystem.Instance.IsPlayerTurn()))
+        {
+            actionPoints = ACTION_POINTS_MAX;
+            OnAnyActionPointsChanged?.Invoke();
+        }
+    }
+
+    public Vector3 GetWorldPosition()
+    {
+        return LevelGrid.Instance.GetWorldPosition(currentPosition);
     }
 
     public SpinAction GetSpinAction() => spinAction;
@@ -69,5 +84,6 @@ public class Unit : MonoBehaviour
     public GridPosition GetGridPosition() => currentPosition;
     public BaseAction[] GetBaseActions() => baseActions;
     public int GetActionPoints() => actionPoints;
+    public bool IsEnemy() => isEnemy;
     
 }
