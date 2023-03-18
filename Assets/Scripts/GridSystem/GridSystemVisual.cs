@@ -1,12 +1,29 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GridSystemVisual : MonoBehaviour
 {
     [SerializeField] private Transform gridSystemVisualSinglePrefab;
+    [SerializeField] private List<GridVisualTypeMaterial> gridVisualTypes;
 
     private GridSystemVisualSingle[,] gridSystemVisualSingles;
+
+    [Serializable]
+    public struct GridVisualTypeMaterial
+    {
+        public GridVisualType gridVisualType;
+        public Material material;
+    }
+
+    public enum GridVisualType
+    {
+        Red,
+        Yellow,
+        White,
+        Blue,
+        RedSoft
+    }
 
     private void Start()
     {
@@ -28,10 +45,9 @@ public class GridSystemVisual : MonoBehaviour
                 gridSystemVisualSingles[x, z] = gridSystemVisualSingle;
             }
         }
-    }
 
-    private void Update()
-    {
+        UnitActionSystem.Instance.OnSelectedActionChange += Instance_OnSelectedActionChange;
+        LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
         UpdateGridSystemVisual();
     }
 
@@ -46,11 +62,33 @@ public class GridSystemVisual : MonoBehaviour
         }
     }
 
-    public void ShowGridPositions(List<GridPosition> gridPositions)
+    public void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType)
+    {
+        List<GridPosition> validGridPositions = new List<GridPosition>();
+
+        for (int x = -range; x <= range; x++)
+        {
+            for (int z = -range; z <= range; z++)
+            {
+                GridPosition offsetPosition = new GridPosition(x, z);
+                GridPosition testGridPosition = gridPosition + offsetPosition;
+                int testDistance = Mathf.Abs(x) + Mathf.Abs(z);
+
+                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition)) { continue; }
+                if (testDistance > range) { continue; }
+
+                validGridPositions.Add(testGridPosition);
+            }
+        }
+
+        ShowGridPositions(validGridPositions, gridVisualType);
+    }
+
+    public void ShowGridPositions(List<GridPosition> gridPositions, GridVisualType gridVisualType)
     {
         foreach (GridPosition gridPosition in gridPositions)
         {
-            gridSystemVisualSingles[gridPosition.x, gridPosition.z].Show();
+            gridSystemVisualSingles[gridPosition.x, gridPosition.z].Show(GetGridVisualTypeMaterial(gridVisualType));
         }
     }
 
@@ -59,6 +97,49 @@ public class GridSystemVisual : MonoBehaviour
         HideAllGridPosition();
         BaseAction baseAction = UnitActionSystem.Instance.GetSelectedAction();
         List<GridPosition> validGridPositions = baseAction.GetValidActionGridPositions();
-        ShowGridPositions(validGridPositions);
+        Unit unit = UnitActionSystem.Instance.GetSelectedUnit();
+
+        GridVisualType gridVisualType;
+
+        switch (baseAction)
+        {
+            case SpinAction spinAction:
+                gridVisualType = GridVisualType.Blue;
+                break;
+            case ShootAction shootAction:
+                int range = shootAction.GetMaxShootDistance();
+                ShowGridPositionRange(unit.GetGridPosition(), range, GridVisualType.RedSoft);
+                gridVisualType = GridVisualType.Red;
+                break;
+            default:
+                gridVisualType = GridVisualType.White;
+                break;
+        }
+
+        ShowGridPositions(validGridPositions, gridVisualType);
+    }
+
+    private Material GetGridVisualTypeMaterial(GridVisualType gridVisualType)
+    {
+        foreach (GridVisualTypeMaterial gridVisualTypeMaterial in gridVisualTypes)
+        {
+            if (gridVisualTypeMaterial.gridVisualType == gridVisualType)
+            {
+                return gridVisualTypeMaterial.material;
+            }
+        }
+
+        Debug.LogError("Could not find GridVisualTypeMaterial for type: " + gridVisualType);
+        return null;
+    }
+
+    public void Instance_OnSelectedActionChange()
+    {
+        UpdateGridSystemVisual();
+    }
+
+    public void LevelGrid_OnAnyUnitMovedGridPosition()
+    {
+        UpdateGridSystemVisual();
     }
 }

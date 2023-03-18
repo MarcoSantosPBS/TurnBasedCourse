@@ -59,7 +59,8 @@ public class ShootAction : BaseAction
 
     private void Shoot()
     {
-        targetUnit.TakeDamage();
+        targetUnit.TakeDamage(40);
+
         OnShoot?.Invoke(this, new OnShootEventArgs
         {
             targetUnit = targetUnit,
@@ -122,4 +123,7 @@ public class ShootAction : BaseAction
         stateTimer = 1f;
         ActionStart(onActionCompleted);
     }
+
+    public Unit GetTargetUnit() => targetUnit;
+    public int GetMaxShootDistance() => maxShootDistance;
 }

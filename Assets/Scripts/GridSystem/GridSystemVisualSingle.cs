@@ -6,9 +6,10 @@ public class GridSystemVisualSingle : MonoBehaviour
 {
     [SerializeField] MeshRenderer meshRenderer;
 
-    public void Show()
+    public void Show(Material gridVisualTypeMaterial)
     {
         meshRenderer.enabled = true;
+        meshRenderer.material = gridVisualTypeMaterial;
     }
 
     public void Hide()

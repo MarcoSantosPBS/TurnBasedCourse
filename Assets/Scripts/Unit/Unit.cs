@@ -7,6 +7,7 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private MoveAction moveAction;
     [SerializeField] private SpinAction spinAction;
+    [SerializeField] private HealthSystem healthSystem;
     [SerializeField] private bool isEnemy;
 
     private const int ACTION_POINTS_MAX = 2;
@@ -14,6 +15,8 @@ public class Unit : MonoBehaviour
     private GridPosition currentPosition;
     private int actionPoints = ACTION_POINTS_MAX;
     public static event Action OnAnyActionPointsChanged;
+    public static event EventHandler OnAnyUnitSpawned;
+    public static event EventHandler OnAnyUnitDead;
 
     private void Awake()
     {
@@ -25,6 +28,9 @@ public class Unit : MonoBehaviour
         currentPosition = LevelGrid.Instance.GetGridPosition(transform.position);
         LevelGrid.Instance.AddUnitToPosition(currentPosition, this);
         TurnSystem.Instance.OnTurnChanged += TurnSystem_OnTurnChanged;
+        healthSystem.OnDead += HealthSystem_OnDead;
+
+        OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     private void Update()
@@ -32,14 +38,15 @@ public class Unit : MonoBehaviour
         if (LevelGrid.Instance.GetGridPosition(transform.position) != currentPosition)
         {
             GridPosition newPosition = LevelGrid.Instance.GetGridPosition(transform.position);
-            LevelGrid.Instance.UpdateUnitPlacement(currentPosition, newPosition, this);
+            GridPosition oldPosition = currentPosition;
             currentPosition = newPosition;
+            LevelGrid.Instance.UpdateUnitPlacement(oldPosition, newPosition, this);
         }
     }
 
-    public  void TakeDamage()
+    public  void TakeDamage(int damage)
     {
-        Debug.Log(transform + "took damage");
+        healthSystem.TakeDamage(damage);
     }
 
     public bool TrySpendActionPointsToTakeAction(BaseAction action)
@@ -77,6 +84,13 @@ public class Unit : MonoBehaviour
     public Vector3 GetWorldPosition()
     {
         return LevelGrid.Instance.GetWorldPosition(currentPosition);
+    }
+
+    public void HealthSystem_OnDead()
+    {
+        LevelGrid.Instance.RemoveUnitFromPosition(currentPosition, this);
+        Destroy(gameObject);
+        OnAnyUnitDead?.Invoke(this, EventArgs.Empty);
     }
 
     public SpinAction GetSpinAction() => spinAction;

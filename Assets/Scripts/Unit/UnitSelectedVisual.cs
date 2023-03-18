@@ -17,4 +17,9 @@ public class UnitSelectedVisual : MonoBehaviour
     {
         mesh.enabled = UnitActionSystem.Instance.GetSelectedUnit() == unit;
     }
+
+    private void OnDestroy()
+    {
+        UnitActionSystem.Instance.OnSelectedUnitChange -= UnitActionSystem_UpdateVisuals;
+    }
 }
