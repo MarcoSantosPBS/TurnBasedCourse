@@ -34,7 +34,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case State.TakingTurn:
                 timer -= Time.deltaTime;
-                if (timer <= 0) 
+                if (timer <= 0)
                 {
                     if (TryTakeEnemyAIAction(SetStateTakingTurn))
                     {
@@ -74,17 +74,31 @@ public class EnemyAI : MonoBehaviour
 
     private bool TryTakeEnemyAIAction(Unit enemyUnit, Action onAIActionCompleted)
     {
-        SpinAction spinAction = enemyUnit.GetSpinAction();
+        EnemyAIAction bestAIAction = null;
+        BaseAction bestBaseAction = null;
 
-        GridPosition enemyGridPosition = enemyUnit.GetGridPosition();
-
-        if (spinAction.IsValidActionGridPosition(enemyGridPosition))
+        foreach (BaseAction baseAction in enemyUnit.GetBaseActions())
         {
-            if (enemyUnit.TrySpendActionPointsToTakeAction(spinAction))
+            if (!enemyUnit.CanSpendActionPointsToTakeAction(baseAction)) { continue; }
+
+            EnemyAIAction enemyAIAction = baseAction.GetBestEnemyAIAction();
+
+            if (bestAIAction == null)
             {
-                spinAction.TakeAction(enemyGridPosition, onAIActionCompleted);
-                return true;
+                bestAIAction = enemyAIAction;
+                bestBaseAction = baseAction;
             }
+            else if (enemyAIAction != null && bestAIAction.actionValue < enemyAIAction.actionValue)
+            {
+                bestAIAction = enemyAIAction;
+                bestBaseAction = baseAction;
+            }
+        }
+
+        if (bestAIAction != null && enemyUnit.TrySpendActionPointsToTakeAction(bestBaseAction))
+        {
+            bestBaseAction.TakeAction(bestAIAction.gridPosition, onAIActionCompleted);
+            return true;
         }
 
         return false;

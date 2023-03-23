@@ -88,9 +88,14 @@ public class ShootAction : BaseAction
 
     public override List<GridPosition> GetValidActionGridPositions()
     {
-        List<GridPosition> validGridPositions = new List<GridPosition>();
         GridPosition unitGridPosition = unit.GetGridPosition();
+        return GetValidActionGridPositions(unitGridPosition);
+    }
 
+    public List<GridPosition> GetValidActionGridPositions(GridPosition unitGridPosition)
+    {
+        List<GridPosition> validGridPositions = new List<GridPosition>();
+        
         for (int x = -maxShootDistance; x <= maxShootDistance; x++)
         {
             for (int z = -maxShootDistance; z <= maxShootDistance; z++)
@@ -122,6 +127,20 @@ public class ShootAction : BaseAction
         canShootBullet = true;
         stateTimer = 1f;
         ActionStart(onActionCompleted);
+    }
+
+    public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
+    {
+        return new EnemyAIAction()
+        {
+            gridPosition = gridPosition,
+            actionValue = 100
+        };
+    }
+
+    public int GetTargetCountAtPosition(GridPosition gridPosition)
+    {
+        return GetValidActionGridPositions(gridPosition).Count;
     }
 
     public Unit GetTargetUnit() => targetUnit;

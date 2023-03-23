@@ -7,6 +7,7 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private MoveAction moveAction;
     [SerializeField] private SpinAction spinAction;
+    [SerializeField] private ShootAction shootAction;
     [SerializeField] private HealthSystem healthSystem;
     [SerializeField] private bool isEnemy;
 
@@ -95,6 +96,7 @@ public class Unit : MonoBehaviour
 
     public SpinAction GetSpinAction() => spinAction;
     public MoveAction GetMoveAction() => moveAction;
+    public ShootAction GetShootAction() => shootAction;
     public GridPosition GetGridPosition() => currentPosition;
     public BaseAction[] GetBaseActions() => baseActions;
     public int GetActionPoints() => actionPoints;
