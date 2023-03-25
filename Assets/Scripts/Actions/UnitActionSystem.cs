@@ -95,7 +95,7 @@ public class UnitActionSystem : MonoBehaviour
     {
         selectedUnit = unit;
         OnSelectedUnitChange?.Invoke();
-        SetSelectedAction(selectedUnit.GetMoveAction());
+        SetSelectedAction(selectedUnit.GetAction<MoveAction>());
     }
 
     private RaycastHit Raycast(Ray ray, LayerMask layerMask)

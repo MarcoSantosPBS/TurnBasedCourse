@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
-    [SerializeField] private MoveAction moveAction;
-    [SerializeField] private SpinAction spinAction;
-    [SerializeField] private ShootAction shootAction;
     [SerializeField] private HealthSystem healthSystem;
     [SerializeField] private bool isEnemy;
 
@@ -43,6 +40,16 @@ public class Unit : MonoBehaviour
             currentPosition = newPosition;
             LevelGrid.Instance.UpdateUnitPlacement(oldPosition, newPosition, this);
         }
+    }
+
+    public T GetAction<T>() where T : BaseAction
+    {
+        foreach (BaseAction baseAction in baseActions)
+        {
+            if (baseAction is T) { return (T)baseAction; }
+        }
+
+        return null;
     }
 
     public  void TakeDamage(int damage)
@@ -94,9 +101,6 @@ public class Unit : MonoBehaviour
         OnAnyUnitDead?.Invoke(this, EventArgs.Empty);
     }
 
-    public SpinAction GetSpinAction() => spinAction;
-    public MoveAction GetMoveAction() => moveAction;
-    public ShootAction GetShootAction() => shootAction;
     public GridPosition GetGridPosition() => currentPosition;
     public BaseAction[] GetBaseActions() => baseActions;
     public int GetActionPoints() => actionPoints;

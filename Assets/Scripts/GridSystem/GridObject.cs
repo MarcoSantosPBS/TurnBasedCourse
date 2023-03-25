@@ -6,11 +6,13 @@ public class GridObject
 {
     private List<Unit> units;
     private GridPosition gridPosition;
+    GridSystem<GridObject> gridSystem;
 
-    public GridObject(GridPosition gridPosition)
+    public GridObject(GridPosition gridPosition, GridSystem<GridObject> gridSystem)
     {
         units = new List<Unit>();
         this.gridPosition = gridPosition;
+        this.gridSystem = gridSystem;
     }
 
     public void AddUnit(Unit unit)

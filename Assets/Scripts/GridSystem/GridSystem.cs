@@ -1,36 +1,42 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GridSystem
+public class GridSystem<TGridObject>
 {
     private int height;
     private int width;
     private int cellSize;
-    private GridObject[,] gridObjects;
+    private TGridObject[,] gridObjects;
 
-    public GridSystem(int height, int width, int cellSize, Transform transform)
+    public GridSystem(int height, int width, int cellSize, Func<GridSystem<TGridObject>, GridPosition, TGridObject> createGridObject)
     {
         this.height = height;
         this.width = width;
         this.cellSize = cellSize;
-        gridObjects = new GridObject[width, height];
+        gridObjects = new TGridObject[width, height];
 
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < height; z++)
             {
                 GridPosition gridPosition = new GridPosition(x, z);
-                gridObjects[x, z] = new GridObject(gridPosition);
-                ShowDebugVisual(transform, gridPosition);
+                gridObjects[x, z] = createGridObject(this, gridPosition);
             }
         }
     }
 
-    private void ShowDebugVisual(Transform transform, GridPosition gridPosition)
+    public void ShowDebugVisual(Transform transform)
     {
-        Transform instantiated = GameObject.Instantiate(transform, GetWorldPosition(gridPosition), Quaternion.identity);
-        instantiated.GetComponent<GridDebugVisual>().Init(gridObjects[gridPosition.x, gridPosition.z]);
+        for (int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < height; z++)
+            {
+                GridPosition position = new GridPosition(x, z);
+                Transform instantiated = GameObject.Instantiate(transform, GetWorldPosition(position), Quaternion.identity);
+                instantiated.GetComponent<GridDebugVisual>().Init(gridObjects[position.x, position.z]);
+            }
+        }
     }
 
     public Vector3 GetWorldPosition(GridPosition gridPosition)
@@ -45,7 +51,7 @@ public class GridSystem
             Mathf.RoundToInt(worldPosition.z / cellSize));
     }
 
-    public GridObject GetGridObject(GridPosition gridPosition)
+    public TGridObject GetGridObject(GridPosition gridPosition)
     {
         return gridObjects[gridPosition.x, gridPosition.z];
     }
